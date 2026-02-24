@@ -26,19 +26,17 @@ export interface RegisterData {
 
 export const authService = {
   /**
-   * CSRFトークンを取得
-   */
-  async getCsrfToken() {
-    await apiClient.get('/sanctum/csrf-cookie');
-  },
-
-  /**
-   * ログイン
+   * ログイン（トークン取得）
    */
   async login(credentials: LoginCredentials): Promise<User> {
-    await this.getCsrfToken();
     const response = await apiClient.post('/api/login', credentials);
-    return response.data.user;
+
+    const { token, user } = response.data;
+
+    // トークン保存
+    localStorage.setItem('auth_token', token);
+
+    return user;
   },
 
   /**
@@ -46,25 +44,29 @@ export const authService = {
    */
   async logout(): Promise<void> {
     await apiClient.post('/api/logout');
+    localStorage.removeItem('auth_token');
   },
 
   /**
    * 会員登録
    */
   async register(data: RegisterData): Promise<User> {
-    await this.getCsrfToken();
     const response = await apiClient.post('/api/register', data);
-    return response.data.user;
+
+    const { token, user } = response.data;
+    localStorage.setItem('auth_token', token);
+
+    return user;
   },
 
   /**
-   * 現在のユーザー情報取得
+   * 現在のユーザー取得
    */
   async getUser(): Promise<User | null> {
     try {
       const response = await apiClient.get('/api/user');
       return response.data.user;
-    } catch (error) {
+    } catch {
       return null;
     }
   },

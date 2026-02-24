@@ -308,7 +308,7 @@ export default function ProductsPage() {
                         <img
                           src={mainImage.image_path}
                           alt={mainImage.alt_text || product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">

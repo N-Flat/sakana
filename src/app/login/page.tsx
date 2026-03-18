@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/'); // ログイン後のリダイレクト先
+      router.push('../products'); // ログイン後のリダイレクト先
     } catch (err: any) {
       setError(err.message || 'ログインに失敗しました');
     } finally {

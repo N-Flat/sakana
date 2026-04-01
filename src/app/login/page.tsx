@@ -39,6 +39,9 @@ export default function LoginPage() {
           <CardDescription>
             アカウント情報を入力してログインしてください
           </CardDescription>
+          <CardDescription>
+            現在デモ用に管理者アカウントを初期値に設定しています。<b>ログインボタンを押し、そのままお進みください</b>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

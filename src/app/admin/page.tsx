@@ -1,13 +1,43 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { analyticsService, MonthlySales, MonthlyOrders, AlertCount } from '@/lib/analytics';
 
 export default function AdminPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [monthlySales, setMonthlySales] = useState<MonthlySales | null>(null);
+  const [monthlyOrders, setMonthlyOrders] = useState<MonthlyOrders | null>(null);
+  const [stockAlerts, setTotalStockAlerts] = useState<AlertCount | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAnalytics = async () => {
+      try {
+        setAnalyticsLoading(true);
+        const [sales, orders, alerts] = await Promise.all([
+          analyticsService.getThisMonthTotalSales(),
+          analyticsService.getThisMonthTotalOrders(),
+          analyticsService.getTotalInventoryAlerts(),
+        ]);
+        setMonthlySales(sales);
+        setMonthlyOrders(orders);
+        setTotalStockAlerts(alerts);
+      } catch (e) {
+        setAnalyticsError('データの取得に失敗しました');
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,6 +55,10 @@ export default function AdminPage() {
 
   if (!user) return null;
 
+  if (analyticsLoading) {
+    return <div>データ取得中...</div>;
+  }
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
@@ -35,30 +69,30 @@ export default function AdminPage() {
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription>今月の売上</CardDescription>
-              <CardTitle className="text-3xl">¥0</CardTitle>
+              <CardTitle className="text-3xl">¥{Number(monthlySales?.total).toLocaleString('ja-JP', { maximumFractionDigits: 0 })}円</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-500">※ 今後実装予定</p>
+              {/* <p className="text-xs text-gray-500">※ 今後実装予定</p> */}
             </CardContent>
           </Card>
 
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription>今月の注文数</CardDescription>
-              <CardTitle className="text-3xl">0件</CardTitle>
+              <CardTitle className="text-3xl">{monthlyOrders?.count}件</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-500">※ 今後実装予定</p>
+              {/* <p className="text-xs text-gray-500">※ 今後実装予定</p> */}
             </CardContent>
           </Card>
 
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardDescription>在庫アラート</CardDescription>
-              <CardTitle className="text-3xl">0件</CardTitle>
+              <CardTitle className="text-3xl">{stockAlerts?.count}件</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-500">※ 今後実装予定</p>
+              {/* <p className="text-xs text-gray-500">※ 今後実装予定</p> */}
             </CardContent>
           </Card>
         </div>
